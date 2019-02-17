@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import os, datetime
-from flask import Flask
+from flask import Flask, abort
 from flask import g
 from flask import request, redirect
 from flask import flash
@@ -14,6 +14,7 @@ import requests
 
 import cloudinary
 from cloudinary import uploader
+
 
 cloudinary.config(
   cloud_name = 'dku6odlrx',
@@ -137,23 +138,22 @@ def extractNameFromFrontImage(imagefile):
                 if area > max_area:
                     result = d["description"]
                     max_area = area
-            print(result)
-            return json.dumps({'name':result})
+            print "found name:", result
+            return result
         else:
-            return 'No Success'
+            return ''
 
 
 def getWordsFromBody(body):
     # The following code sucks because the response we get from the API sucks more!!!!!!!!!!!!
     all_words = []
-    for i in range(len(body["regions"])):
-        for j in range(len(body["regions"][i]["lines"])):
-            for k in range(len(body["regions"][i]["lines"][j])):
-                for t in range(len(body["regions"][i]["lines"][j]["words"])):
-                    text = body["regions"][i]["lines"][j]["words"][t]["text"]
-                    text = text.encode('utf-8')
-                    text = str(text).lower()
-                    all_words.append(text)
+    for region in body["regions"]:
+        for line in region["lines"]:
+            for word in line["words"]:
+                text = word["text"]
+                text = text.encode('utf-8')
+                text = str(text).lower()
+                all_words.append(text)
     return all_words
 
 
@@ -162,8 +162,9 @@ def extractFromImage():
     if 'imagefront' not in request.files or 'imageback' not in request.files:
         flash('No file part')
         redirect(request.url)
+        return abort(400)
     imagefront = request.files['imagefront']
-    extractNameFromFrontImage(imagefront)
+    name = extractNameFromFrontImage(imagefront)
     imagefile = request.files['imageback']
     if imagefile:
         #filename = secure_filename(imagefile.filename)
@@ -205,9 +206,8 @@ def extractFromImage():
         elif response.status_code >= 400:
             return "User Input Error\n"
         else:
-            all_words = getWordsFromBody(response.content)
+            all_words = getWordsFromBody(response.json())
             all_words = detectAndTranslateLanguage(all_words)
-            name = None
             dosage = None
             freq = None
             max = None
@@ -341,5 +341,6 @@ def bye_world():
     close_connection(0)
     return 'Bye world!'
 
+app.secret_key = "1309utgohfsv8ywoFEHTHTRWHTwkehu32o8e"
 
 app.run(host='0.0.0.0', port= 5000)
