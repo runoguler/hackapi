@@ -70,12 +70,12 @@ def detectAndTranslateLanguage(ll):
                                "Accept": "application/json"
                            }
                            )'''
-    if response.code >= 500:
+    if response.status_code >= 500:
         return "Server Error\n"
-    elif response.code >= 400:
+    elif response.status_code >= 400:
         return "User Input Error\n"
     else:
-        body = str(response.body)
+        body = str(response.content)
         lang = body.split(">")[1].split("<")[0]
         if 'en' not in lang:
             response = requests.get(
@@ -91,12 +91,12 @@ def detectAndTranslateLanguage(ll):
                     "X-RapidAPI-Key": "d18d84006cmsh404865c0a044e37p1a8037jsn317de1042bc3"
                 }
                 )'''
-            if response.code >= 500:
+            if response.status_code >= 500:
                 return "Server Error\n"
-            elif response.code >= 400:
+            elif response.status_code >= 400:
                 return "User Input Error\n"
             else:
-                body = str(response.body)
+                body = str(response.content)
                 result = body.split(">")[1].split("<")[0]
                 lll = result.split(" ")
                 return lll
@@ -200,12 +200,12 @@ def extractFromImage():
             }
             )'''
 
-        if response.code >= 500:
+        if response.status_code >= 500:
             return "Server Error\n"
-        elif response.code >= 400:
+        elif response.status_code >= 400:
             return "User Input Error\n"
         else:
-            all_words = getWordsFromBody(response.body)
+            all_words = getWordsFromBody(response.content)
             all_words = detectAndTranslateLanguage(all_words)
             name = None
             dosage = None
@@ -286,12 +286,12 @@ def oldExtractFromImage():
             }
             )'''
 
-        if response.code >= 500:
+        if response.status_code >= 500:
             return "Server Error\n"
-        elif response.code >= 400:
+        elif response.status_code >= 400:
             return "User Input Error\n"
         else:
-            body = response.body
+            body = response.content
             # The following code sucks because the response we get from the API sucks more!!!!!!!!!!!!
             name = None
             dosage = None
